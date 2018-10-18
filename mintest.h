@@ -49,44 +49,41 @@ struct Test {
 #define SET_CLEAR "\033[0m"
 #define CLEAR_EOL SET_CLEAR "\n"
 
-#define LOG_ASSERT_FAIL(args...) do { \
+#define LOG_ASSERT_FAIL(...) do { \
     fprintf(stderr, SET_RED "Test failed: %s:%d:\t", __FILE__, __LINE__); \
-    fprintf(stderr, args); \
+    fprintf(stderr, __VA_ARGS__); \
     fprintf(stderr, CLEAR_EOL); \
 } while (0)
 
-#define LOG_ASSERT_INFO(args...) do { \
+#define LOG_ASSERT_INFO(...) do { \
     fprintf(stderr, SET_CYAN); \
-    fprintf(stderr, args); \
+    fprintf(stderr, __VA_ARGS__); \
     fprintf(stderr, CLEAR_EOL); \
 } while (0)
 
-#define ASSERT_EQ(a,b) \
-    if ((a) == (b)) { \
+#define ASSERT_THAT(cond, msg) do { \
+    if (cond) { \
         ++test->passed; \
     } else { \
         ++test->failed; \
-        LOG_ASSERT_FAIL(#a " == " #b); \
+        LOG_ASSERT_FAIL(msg); \
     } \
+} while (0)
 
-#define ASSERT_NE(a,b) \
-    if ((a) != (b)) { \
-        ++test->passed; \
-    } else { \
-        ++test->failed; \
-        LOG_ASSERT_FAIL(#a " != " #b); \
-    } \
+#define ASSERT_EQ(a, b) ASSERT_THAT((a) == (b), #a " == " #b)
+#define ASSERT_NE(a, b) ASSERT_THAT((a) != (b), #a " != " #b)
 
-#define ASSERT_NOTHROW(expr) \
+#define ASSERT_NOTHROW(expr) do { \
     if (setjmp(g_exceptionHandler)) { \
         ++test->failed; \
         LOG_ASSERT_FAIL("Unexpected error (signal): %d", g_lastCaughtSignal); \
     } else { \
         (expr); \
         ++test->passed; \
-    }
+    } \
+} while (0)
 
-#define ASSERT_THROWS(sig, expr) \
+#define ASSERT_THROWS(sig, expr) do { \
     if (setjmp(g_exceptionHandler)) { \
         if (sig == g_lastCaughtSignal) { \
             ++test->passed; \
@@ -98,7 +95,8 @@ struct Test {
         (expr); \
         ++test->failed; \
         LOG_ASSERT_FAIL("Expected error, got none"); \
-    }
+    } \
+} while (0)
 
 #define ASSERT_THROWN(expr) ASSERT_THROWS(SIGABRT, (expr))
 #define ASSERT_SEGV(expr) ASSERT_THROWS(SIGSEGV, (expr))
