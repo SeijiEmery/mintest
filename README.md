@@ -1,4 +1,4 @@
-#Mintest
+# Mintest
 
 This is a small, and extremely minimalistic unittesting library for C that is capable of testing asserts and segfaults via unix signal handlers.
 
